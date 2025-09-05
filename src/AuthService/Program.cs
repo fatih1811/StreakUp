@@ -1,12 +1,9 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 var app = builder.Build();
 
@@ -19,13 +16,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+// Health check endpoint
+app.MapGet("/healthz", () => "OK")
+    .WithName("HealthCheck")
+    .WithOpenApi();
 
-app.MapControllers();
+// Auth endpoints
+app.MapPost("/api/auth/register", () => new { message = "stub register" })
+    .WithName("Register")
+    .WithOpenApi();
 
-// Add healthz endpoint
-app.MapGet("/healthz", () => "OK");
-
-app.MapReverseProxy();
+app.MapPost("/api/auth/login", () => new { message = "stub login" })
+    .WithName("Login")
+    .WithOpenApi();
 
 app.Run();
